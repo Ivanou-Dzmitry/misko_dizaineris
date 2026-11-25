@@ -1,109 +1,109 @@
 # MiskoDizaineris
 
-**Русский** | [English](README.en.md)
+[Русский](README.ru.md) | **English**
 
-Аддон для Blender 5.2+: процедурные lowpoly-деревья: изогнутый ствол, ветки, которые ветвятся, и листва. UV-развёртка делается сразу при создании.
-Построен так же, как RoadBuilder: `generator.py` (геометрия, bmesh), `operators.py` (настройки и операторы), `ui.py` (панель),
-`exporter.py` (FBX и пресеты).
+A Blender 5.2+ add-on for procedural low-poly trees: a bent trunk, branches that fork, and foliage. The UV unwrap is made when the tree is created.
+It is built like RoadBuilder: `generator.py` (geometry, bmesh), `operators.py` (settings and operators), `ui.py` (panel),
+`exporter.py` (FBX and presets).
 
-Панель: **3D View → N → MiskoDizaineris**. Также **Add → Mesh → Tree**.
+Panel: **3D View → N → MiskoDizaineris**. Also **Add → Mesh → Tree**.
 
-Как установить и работать: [docs/HOWTO.md](docs/HOWTO.md). История версий: [CHANGELOG.md](CHANGELOG.md). Готовый zip: [Releases](https://github.com/Ivanou-Dzmitry/misko_dizaineris/releases).
+How to install and work: [docs/HOWTO.md](docs/HOWTO.md). Version history: [CHANGELOG.md](CHANGELOG.md) (in Russian). Ready-made zip: [Releases](https://github.com/Ivanou-Dzmitry/misko_dizaineris/releases).
 
-![Типы](docs/types.png)
+![Types](docs/types.png)
 
-## Типы
+## Types
 
-Слева направо: ель, сосна, тополь, липа, ива, берёза, куст, голое дерево. Кнопка типа добавляет дерево в позицию 3D-курсора и кладёт настройки типа в панель.
+Left to right: spruce, pine, poplar, linden, willow, birch, bush, bare tree. A type button adds a tree at the 3D cursor and puts the settings of the type into the panel.
 
-| Тип     | Что это |
-|---------|---------|
-| Spruce  | Ель: прямой ствол и ярусы-«юбки» с зубчатым подолом (`Foliage` = Tiers, около 700 треугольников); с `Foliage` = Sheath или None снова ветки «ёлочкой». |
-| Pine    | Сосна: высокий голый ствол, небольшая крона наверху. |
-| Poplar  | Тополь: высокий, узкая крона-веретено, ветки круто вверх. |
-| Linden  | Липа: короткий ствол, широкая круглая крона. |
-| Willow  | Ива: толстый ствол, широкая крона, длинные свисающие ветки. |
-| Birch   | Берёза: тонкая, чуть изогнутая, овальная крона. |
-| Bush    | Куст: без ствола, тонкие ветки веером от земли. |
-| Bare Tree | Голое дерево (зима, сухое): расширенный кривой ствол, толстые изломанные ветви, много развилок, без листвы. |
+| Type      | What it is |
+|-----------|------------|
+| Spruce    | A straight trunk and tiers (skirts) with a toothed hem (`Foliage` = Tiers, about 700 triangles); with `Foliage` = Sheath or None it is herringbone branches again. |
+| Pine      | A tall bare trunk with a small crown on top. |
+| Poplar    | Tall, a narrow spindle-shaped crown, branches steeply up. |
+| Linden    | A short trunk and a wide round crown. |
+| Willow    | A thick trunk, a wide crown, long hanging branches. |
+| Birch     | Slim, slightly bent, an oval crown. |
+| Bush      | No trunk, thin stems fanning out from the ground. |
+| Bare Tree | A bare (winter, dry) tree: a flared crooked trunk, thick broken branches, many forks, no foliage. |
 
-## Как задаётся дерево
+## How a tree is defined
 
-**Ствол**: `Height`, `Width at Base`, `Width in Middle`, `Width at End` (радиусы на 0, 50% и 100% высоты, между ними прямо),
-`Stubs`, `Stubs Start` (с какой доли голого ствола они начинаются), `Stub Length` (короткие сучки на голом стволе ниже кроны, как у сосны), стороны, кольца, `Bend` (наклон верхушки), `Wobble`, `Sink` (насколько ствол уходит под землю), `Bottom Cap`.
+**Trunk**: `Height`, `Width at Base`, `Width in Middle`, `Width at End` (radii at 0, 50% and 100% of the height, straight between them),
+`Stubs`, `Stubs Start` (where on the bare trunk they begin), `Stub Length` (short stubs on the bare trunk below the crown, like a pine), sides, rings, `Bend` (lean of the top), `Wobble`, `Sink` (how deep the trunk goes into the ground), `Bottom Cap`.
 
-**Крона** — силуэт по трём уровням, как на эскизе:
+**Crown**: a silhouette in three levels, like in a sketch:
 
-1. `Crown Bottom`: где растут нижние ветки (доля высоты), `Radius 1`: как далеко они достают от ствола.
-2. `Widest Place`: где крона самая широкая (доля кроны), `Radius 2`.
-3. `Crown Top`: где растут верхние ветки, `Radius 3`.
+1. `Crown Bottom`: where the lowest branches grow (a part of the height), `Radius 1`: how far they reach from the trunk.
+2. `Widest Place`: where the crown is the widest (a part of the crown), `Radius 2`.
+3. `Crown Top`: where the top branches grow, `Radius 3`.
 
-`Roundness`: 0 — прямые линии (конус), 1 — эллипс (шар). Ель: самое широкое место внизу (0), `Radius 3` = 0.
+`Roundness`: 0 is straight lines (a cone), 1 is an ellipse (a ball). Spruce: the widest place at the bottom (0), `Radius 3` = 0.
 
-**Ветки**: `Levels` рядов по `Per Level` веток (1 в ряду — спираль, 4–6 — мутовки), `Angle Bottom`/`Angle Top` от ствола,
-`Droop` (провисание, минус — вверх), `Thickness` (от толщины ствола на этой высоте), `Tip Thickness`, `Branch Sides`, `Branch Segments`.
-**Изгиб**: ствол не прямая труба. `Bend` (наклон верхушки) и `Wobble` (каждое кольцо сдвигается от нижнего в случайную сторону: кривизна и изломы), `Flare` (расширение у основания).
-Ветки: `Wiggle` (изгиб в сторону и излом на каждом внутреннем кольце, нужны `Branch Segments` от 3).
+**Branches**: `Levels` rows of `Per Level` branches (1 per row is a spiral, 4–6 are whorls), `Angle Bottom` / `Angle Top` from the trunk,
+`Droop` (sag, minus is up), `Thickness` (a part of the trunk thickness at that height), `Tip Thickness`, `Branch Sides`, `Branch Segments`.
+**Bend**: the trunk is not a straight pipe. `Bend` (lean of the top) and `Wobble` (every ring is shifted from the one below to a random side: curves and kinks), `Flare` (wider at the base).
+Branches: `Wiggle` (a bend to the side and a kink at every inner ring; needs `Branch Segments` from 3).
 
-`Collar` (воротник): место выхода ветки из ствола шире, до этой доли, и сужается к своей толщине: стык не выглядит тонкой трубой, врезанной в толстую. Воротник не шире ствола. `Thickness` задаёт толщину без нижнего предела: на минимуме ветки тонкие, как проволока.
+`Collar`: where a branch leaves the trunk it is wider, by up to this part, and narrows to its own thickness: the join does not look like a thin tube cut into a thick one. The collar is never wider than the trunk. `Thickness` sets the thickness with no lower limit: at the minimum the branches are as thin as wire.
 
-**Куст** (`Foliage` = Bush Blob, тип Bush): `Bush Shape` (Ball, Box, Egg), `Bush Width` и `Bush Length` (размер в метрах), `Bush Blobs` (1–4 круглых блобов, только Ball: самый большой посередине, остальные вокруг), `Bush Cloud` (при одном блобе: шар с пуфами), `Bush Rough`, `Bush Lift`, `Bush Stems`, `Roots Radius`, `Stem Lean`.
+**Bush** (`Foliage` = Bush Blob, type Bush): `Bush Shape` (Ball, Box, Egg), `Bush Width` and `Bush Length` (size in metres), `Bush Blobs` (1–4 round blobs, Ball only: the biggest in the middle, the others round it), `Bush Cloud` (with one blob: a ball with puffs), `Bush Rough`, `Bush Lift`, `Bush Stems`, `Roots Radius`, `Stem Lean`.
 
-**Развилки** (`Forks`): на каждой ветке растут ветки в виде Y, вверх и в стороны, и сами ветвятся: `Fork Levels` поколений. `Fork Start` (где первая, доля длины ветки),
-`Fork Angle`, `Fork Length` (доля длины ветки), `Fork Thickness`. 0 = просто палки.
-`Pattern`: `Alternate` (по одной, то с одной стороны, то с другой: лиственные) или `Pairs` (две противоположные развилки на каждом месте, в стороны и вперёд, «ёлочка» как у еловой ветки, `Forks` это число пар; у ели по умолчанию).
+**Forks** (`Forks`): on every branch grow branches in the shape of a Y, up and to the sides, and they fork too: `Fork Levels` generations. `Fork Start` (where the first one is, a part of the branch length),
+`Fork Angle`, `Fork Length` (a part of the branch length), `Fork Thickness`. 0 = plain sticks.
+`Pattern`: `Alternate` (one at a time, first on one side, then on the other: broadleaf trees) or `Pairs` (two opposite forks at every place, to the sides and forward, a herringbone like a spruce branch; `Forks` is the number of pairs; the default for spruce).
 
-**Чем меньше ветка, тем меньше деталей**: размер ветки это радиус кроны там, где она растёт. У нижнего и верхнего края кроны (маленькие `Radius 1` и `Radius 3`) ветки простые: меньше развилок, поколений, сторон и сегментов. `Forks` и `Fork Levels` это значения для самых больших веток; `Fork Fade`: 0 = у всех одинаково, 1 = пропорционально радиусу. Верхние `Fork Top Skip` рядов (по умолчанию 2) без развилок. Развилки на ветке к концу короче: первая самая длинная, у кончика самая короткая. Ветка укорачивается, пока её конец не окажется внутри силуэта кроны, поэтому верх кроны круглый.
+**The smaller the branch, the less detail**: the size of a branch is the crown radius where it grows. At the bottom and top edges of the crown (small `Radius 1` and `Radius 3`) the branches are simple: fewer forks, generations, sides and segments. `Forks` and `Fork Levels` are the values for the biggest branches; `Fork Fade`: 0 = the same for all, 1 = in proportion to the radius. The top `Fork Top Skip` rows (2 by default) have no forks. Forks on a branch get shorter towards the end: the first is the longest, the one at the tip is the shortest. A branch is shortened until its end is inside the crown silhouette, so the top of the crown is round.
 
-**Листва** (`Foliage`): `Clumps` — клуб на конце каждой ветки и развилки, `Sheath` — плоская «юбка» вдоль ветки (ель), `None` — без листвы.
-`Leaf Size`, `Leaf Height` (меньше 1 — плоский клуб, больше 1 — вытянутый: ива, тополь), `Leaf Detail` (1 = 20 треугольников на клуб), `Spread` (клубы разбросаны: не только на кончиках, сдвинуты в стороны), `Foliage` = **Tiers** (ёлка ярусами: ветки не строятся, ярусы-«юбки» с зубчатым подолом, `Tier Lobes` (широкие лопасти), `Tier Cut Width` и `Tier Notch` (прямые вырезы между ними: сверху круг с вырезами), `Tier Bend` (профиль лопасти сбоку изогнут: круче у ствола, положе к краю), `Tier Height`, `Tier Thickness` (кромка по подолу, как Solidify Only Rim без дна), `Tier Layers`, `Tier Notch`; у Spruce по умолчанию), `Puffs` (маленькие пуфы на клубе: пушистое «облачко»), `Size Variation` и `Size Falloff` (клубы разного размера, крупные в середине кроны), `Merge Leaves` (невидимое не создаётся: клубы с совпадающими центрами или внутри других и грани внутри шаров).
+**Foliage** (`Foliage`): `Clumps` is a clump at the end of every branch and fork, `Sheath` is a flat skirt along the branch (spruce), `None` is no foliage.
+`Leaf Size`, `Leaf Height` (below 1 is a flat clump, above 1 is stretched: willow, poplar), `Leaf Detail` (1 = 20 triangles per clump), `Spread` (clumps are scattered: not only at the tips, moved to the sides), `Foliage` = **Tiers** (a spruce in tiers: no branches are built, tiers with a toothed hem, `Tier Lobes` (wide lobes), `Tier Cut Width` and `Tier Notch` (straight cuts between them: a circle with cuts from above), `Tier Bend` (the side profile of a lobe is bent: steeper at the trunk, flatter at the edge), `Tier Height`, `Tier Thickness` (a rim along the hem, like Solidify Only Rim with no bottom), `Tier Layers`; the default for Spruce), `Puffs` (small puffs on a clump: a fluffy cloud), `Size Variation` and `Size Falloff` (clumps of different sizes, big ones in the middle of the crown), `Merge Leaves` (hidden geometry is not made: clumps with the same centres or inside others, and faces inside the balls).
 
-Ряд веток это базовая линия: каждая ветка выходит чуть выше или ниже неё (`Height Spread`). Толщина ветки в точке выхода это доля `Thickness` от радиуса ствола на этой высоте, но всегда меньше ствола, и тем тоньше, чем больше веток в ряду.
+A row of branches is a base line: every branch leaves a little above or below it (`Height Spread`). The thickness of a branch where it leaves is a part (`Thickness`) of the trunk radius at that height, but always less than the trunk, and thinner the more branches there are in a row.
 
-`Seed` и `Randomness` разнообразят деревья одного типа. Дерево не выше `Height`: ветки, которые вышли бы выше, укорачиваются.
+`Seed` and `Randomness` make trees of one type different. A tree is never taller than `Height`: branches that would go higher are shortened.
 
-## Дерево как группа
+## A tree as a group
 
-Дерево это **пустышка** (корень: на ней настройки и штампы, её двигают и вращают) и под ней отдельные объекты:
+A tree is an **Empty** (the root: it holds the settings and stamps, you move and rotate it) with separate objects under it:
 
-- `<имя>_trunk`: ствол, материал `FT_Bark`;
-- `<имя>_branches`: ветки и развилки, тот же материал `FT_Bark`;
-- `<имя>_leaves`: листва, материал `FT_Leaf` (нет, если `Foliage` = None).
+- `<name>_trunk`: the trunk, material `FT_Bark`;
+- `<name>_branches`: branches and forks, the same material `FT_Bark`;
+- `<name>_leaves`: the foliage, material `FT_Leaf` (absent if `Foliage` = None).
 
-Выбор любой части выбирает дерево целиком для перестройки. Экспорт FBX сохраняет иерархию.
+Selecting any part selects the whole tree for rebuilding. The FBX export keeps the hierarchy.
 
 ## Live Update
 
-Любой параметр панели **сразу перестраивает выбранные деревья**: крутите ползунок и смотрите (перестройка 6–18 мс). Выберите дерево (или любую его часть).
-Если ничего не выбрано, ничего не меняется. **Get Settings** берёт настройки активного дерева в панель. Для тяжёлого дерева галочку `Live Update` можно снять и
-нажимать **Rebuild Selected**. Всё сглажено (`Smooth Shading`, можно выключить).
+Any parameter of the panel **rebuilds the selected trees at once**: drag a slider and watch (a rebuild takes 6–18 ms). Select a tree (or any part of it).
+If nothing is selected, nothing changes. **Get Settings** takes the settings of the active tree into the panel. For a heavy tree you can turn `Live Update` off and
+press **Rebuild Selected**. Everything is smooth-shaded (`Smooth Shading`, can be turned off).
 
 ## UV
 
-**Одна общая карта 0..1 на всё дерево** (ствол, ветки, листва), одинаковая плотность, острова не вращаются, всё строго внутри 0..1. Острова упакованы в наименьший квадрат (skyline). Параметры в секции UV:
+**One shared 0..1 map for the whole tree** (trunk, branches, foliage), the same density, islands are not rotated, everything strictly inside 0..1. The islands are packed into the smallest square (skyline). Options in the UV section:
 
-- **Unique UV (Bake)** (по умолчанию включено): для запекания АО и нормалей ничего не накладывается. Каждая ветка и развилка своя полоса, каждый шар листвы (основной и пуфы) развёрнут в свой остров. Выключено: для тайлящейся текстуры похожие острова лежат стопкой (`Overlap Similar`, как в ConstructionBuilder), а вся листва на одном общем квадрате (запекание смешало бы клубы).
-- **Straight Strips** (включено): полоса одной ширины по всей длине, без мёртвых углов; текстура растянута там, где труба тонкая.
-- **Cut Trunk**: высокий ствол режется поперёк на куски (0 = сколько нужно, чтобы тайл стал меньше, 1 = не резать).
-- **Overlap Similar** (только при выключенном Unique UV), **UV Margin** (зазор).
+- **Unique UV (Bake)** (on by default): for baking AO and normals nothing overlaps. Every branch and fork is its own strip, every foliage ball (the main one and the puffs) is unwrapped into its own island. Off: for a tiling texture similar islands lie in a stack (`Overlap Similar`, like in ConstructionBuilder), and all the foliage is on one shared square (baking would mix the clumps).
+- **Straight Strips** (on): a strip of one width along its whole length, no dead corners; the texture is stretched where the tube is thin.
+- **Cut Trunk**: a tall trunk is cut across into pieces (0 = as much as needed to make the tile smaller, 1 = do not cut).
+- **Overlap Similar** (only with Unique UV off), **UV Margin** (the gap).
 
-Части остаются отдельными объектами с двумя материалами: `FT_Bark` (ствол и ветки) и `FT_Leaf` (листва); UV у них общая: один атлас.
+The parts stay separate objects with two materials: `FT_Bark` (trunk and branches) and `FT_Leaf` (foliage); their UV is shared: one atlas.
 
-## Кнопки
+## Buttons
 
-- **Add** (по типу) — дерево в позиции 3D-курсора.
-- **Add Variants** — ряд деревьев текущего типа с seed, seed+1, …
-- **All Types** — по дереву каждого типа в ряд, для сравнения.
-- **Rebuild Selected** — пересобрать выбранные деревья настройками панели (при `Live Update` это происходит само). **Get Settings** — взять настройки активного дерева в панель.
-- **Export FBX** — выбранные деревья (или все), по файлу на дерево или одним файлом. Для Unity: масштаб и оси запечены в меш. `Merge Trunk and Branches` (по умолчанию): ствол и ветки в файле одним мешем `<имя>_wood` (материал `FT_Bark`), листва отдельным `<имя>_leaves` (`FT_Leaf`): два меша, два материала; в сцене части остаются отдельными.
-- **Presets** — сохранить настройки панели под именем и загрузить. Кнопка с папкой открывает папку пресетов (`%APPDATA%\Blender Foundation\Blender\<версия>\extensions\.user\user_default\misko_dizaineris\presets`, один JSON на пресет), кнопка с кругом перечитывает файлы.
+- **Add** (per type) — a tree at the 3D cursor.
+- **Add Variants** — a row of trees of the current type with seed, seed+1, …
+- **All Types** — one tree of every type in a row, to compare.
+- **Rebuild Selected** — rebuild the selected trees with the panel settings (with `Live Update` this happens by itself). **Get Settings** — take the settings of the active tree into the panel.
+- **Export FBX** — the selected trees (or all), one file per tree or one file for all. For Unity: scale and axes are baked into the mesh. `Merge Trunk and Branches` (default): the trunk and branches go into the file as one mesh `<name>_wood` (material `FT_Bark`), the foliage as a separate `<name>_leaves` (`FT_Leaf`): two meshes, two materials; in the scene the parts stay separate.
+- **Presets** — save the panel settings under a name and load them. The folder button opens the presets folder (`%APPDATA%\Blender Foundation\Blender\<version>\extensions\.user\user_default\misko_dizaineris\presets`, one JSON per preset), the circle button re-reads the files.
 
-Корень каждого дерева хранит `forest_type`, `forest_params` (JSON) и `forest_version`. Имя: `<тип><высота>_s<seed>`, например `spruce10_s1`.
+The root of every tree keeps `forest_type`, `forest_params` (JSON) and `forest_version`. The name is `<type><height>_s<seed>`, for example `spruce10_s1`.
 
-## Что дальше
+## What next
 
-Карточки листвы с альфой как второй стиль, раздвоение самого ствола (несколько лидеров), корни, LOD.
+Foliage cards with alpha as a second style, a split of the trunk itself (several leaders), roots, LOD.
 
-## Сборка
+## Build
 
-`build.ps1` собирает `dist/misko_dizaineris.zip` для установки через Extensions.
+`build.ps1` builds `dist/misko_dizaineris.zip` for installing through Extensions.
