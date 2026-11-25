@@ -1,0 +1,16 @@
+schema_version = "1.0.0"
+
+id = "misko_dizaineris"
+version = "0.14.2"
+name = "MiskoDizaineris"
+tagline = "Procedural low-poly trees with foliage: spruce, pine, poplar, linden, willow, birch, bush, bare tree. UV included"
+maintainer = "Dzmitry Ivanou <id.cgtalk@gmail.com>"
+type = "add-on"
+
+tags = ["Add Mesh", "Modeling"]
+
+blender_version_min = "5.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
