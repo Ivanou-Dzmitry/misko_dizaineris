@@ -1,5 +1,7 @@
 # MiskoDizaineris
 
+**Русский** | [English](README.en.md)
+
 Аддон для Blender 5.2+: процедурные lowpoly-деревья: изогнутый ствол, ветки, которые ветвятся, и листва. UV-развёртка делается сразу при создании.
 Построен так же, как RoadBuilder: `generator.py` (геометрия, bmesh), `operators.py` (настройки и операторы), `ui.py` (панель),
 `exporter.py` (FBX и пресеты).
