@@ -349,6 +349,29 @@ def _trunk_path(s, rng):
         if z > 1e-6:
             walk += Vector((rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0), 0.0)) * s["trunk_wobble"]
         path.append((lean * (s["trunk_bend"] * t * t) + walk + Vector((0.0, 0.0, z)), _trunk_radius(s, t)))
+    return _bend_straight_rings(path, random.Random(int(s["seed"]) * 7919 + 13))
+
+
+def _bend_straight_rings(path, rng, share=0.03):
+    """Where a ring lies on (or almost on) the line between its two neighbours, the trunk is a dead straight pipe there. Move such
+    a ring sideways by `share` of the length of its two segments: a small bend at every section. The rings that already bend more
+    are not touched. A separate random generator, so that the branches do not change."""
+    path = list(path)
+    for i in range(1, len(path) - 1):
+        (a, _ra), (p, rp), (b, _rb) = path[i - 1], path[i], path[i + 1]
+        if p.z <= 1e-6 or b.z - a.z < 1e-6:
+            continue
+        mid = a.lerp(b, (p.z - a.z) / (b.z - a.z))
+        off = Vector((p.x - mid.x, p.y - mid.y, 0.0))
+        need = share * (b - a).length
+        if off.length >= need:
+            continue
+        if off.length > 1e-6:
+            direction = off.normalized()
+        else:
+            k = rng.uniform(0.0, 2.0 * math.pi)
+            direction = Vector((math.cos(k), math.sin(k), 0.0))
+        path[i] = (Vector((mid.x + direction.x * need, mid.y + direction.y * need, p.z)), rp)
     return path
 
 
